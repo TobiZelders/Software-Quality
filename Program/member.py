@@ -26,3 +26,14 @@ def member_menu(username, role):
         else:
             print("Invalid choice. Please try again.")
 
+def add_member():
+    pass
+
+def modify_member():
+    pass
+
+def search_member():
+    pass
+
+def delete_member():
+    pass
