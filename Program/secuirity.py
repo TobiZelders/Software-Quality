@@ -27,6 +27,7 @@ def username_regex(username):
 correct_usernames = ["user_one", "_user1234", "john.doe1", "user.123"]
 incorrect_usernames = ["user1", "12345678", "longusername", ".user123"]
 
+'''
 for username in correct_usernames:
     if username_regex(username):
         print(f"'{username}' is a valid username")
@@ -38,6 +39,8 @@ for username in incorrect_usernames:
         print(f"'{username}' is a valid username")
     else:
         print(f"'{username}' is an invalid username")
+'''
+
 
 def password_regex(password):
     """
@@ -63,6 +66,7 @@ def password_regex(password):
 correct_passwords = ["StrongPass1!@#", "Abcdefghijkl1!", "12345aBcDeFg!@", "ValidPassw0rd!"]
 incorrect_passwords = ["short1A!", "alllowercaseandlongenough", "ALLUPPERCASEANDLONGENOUGH1!", "MissingDigitAndSpecialChar", "NoSpecialChar1234"]
 
+'''
 for password in correct_passwords:
     if password_regex(password):
         print(f"'{password}' is a valid password")
@@ -74,6 +78,8 @@ for password in incorrect_passwords:
         print(f"'{password}' is a valid password")
     else:
         print(f"'{password}' is an invalid password")
+
+'''
 
 def hash_password(password):
     """
@@ -92,7 +98,9 @@ def hash_password(password):
     hash_name = 'sha256'
     derived_key_length = None
 
-    return salt, hashlib.pbkdf2_hmac(hash_name, byte_password, salt, iterations, derived_key_length)
+    result = hashlib.pbkdf2_hmac(hash_name, byte_password, salt, iterations, derived_key_length)
+
+    return f"{salt.hex()}:{result.hex()}"
     #return hashlib.sha256(password.encode()).hexdigest()
 
 def verify_password(stored_password, input_password):
@@ -106,6 +114,7 @@ def verify_password(stored_password, input_password):
 
     salt = stored_password.split(':')[0]
     hashed_password = stored_password.split(':')[1]
+
     salt = bytes.fromhex(salt)
     hashed_password = bytes.fromhex(hashed_password)
 
@@ -114,9 +123,9 @@ def verify_password(stored_password, input_password):
     iterations = 500_000
     derived_key_length = None
 
-    new_hashed_password = hashlib.pbkdf2_hmac(hash_name, hashed_password, salt, iterations, derived_key_length)
+    new_hashed_password = hashlib.pbkdf2_hmac(hash_name, input_password, salt, iterations, derived_key_length)
 
-    return new_hashed_password == input_password
+    return new_hashed_password == hashed_password
 
 def add_user(username, password, role, first_name, last_name):
     conn = create_connection()
