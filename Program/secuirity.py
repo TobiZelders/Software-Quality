@@ -3,6 +3,7 @@ import datetime
 import hashlib
 import os
 import re
+import cryptography
 from db import create_connection
 
 def username_regex(username):
@@ -142,9 +143,8 @@ def authenticate(username, password):
     cursor.execute('SELECT password_hash FROM users WHERE username=?', (username,))
     data = cursor.fetchone()
     conn.close()
-    if data and data[0] == hash_password(password):
-        return True
-    return False
+    print('-------------')
+    return verify_password(data[0], password)
 
 def get_role(username):
     conn = create_connection()
