@@ -62,3 +62,12 @@ def display_all_info():
         print(log)
 
     conn.close()
+
+def delete_table_users():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users")
+    conn.commit()
+    conn.close()
+
+    display_all_info()
