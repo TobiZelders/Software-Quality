@@ -8,10 +8,9 @@ display.main_menu()
 
 """
 TODO
-1. Functionality all users
+1. Encryption decryption
 2. Backups
-3. Adjust logs
-4. 
-
+3. Log every suspicious thing
+4. Make regex for user input
 """
 

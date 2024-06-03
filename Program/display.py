@@ -1,6 +1,8 @@
-from secuirity import authenticate, get_role, add_user
-from log import log_activity
-from member import member_menu
+from Program.security.authentication import authenticate
+from Program.security.general_security import get_role, add_user
+from Program.security.log import log_activity
+from Program.menus.member import member_menu
+
 
 def main_menu():
     add_user("super_admin","Admin_123", "super-admin", "Tobias", "Zelders")
