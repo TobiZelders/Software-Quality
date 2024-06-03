@@ -8,7 +8,7 @@ def initialize_db():
     conn = create_connection()
     cursor = conn.cursor()
     # Create tables
-    cursor.execute('''CREATE TABLE IF NOT EXISTS users (
+    cursor.execute('''CREATE TABLE IF NOT EXISTS menus (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         username TEXT UNIQUE NOT NULL,
                         password_hash TEXT NOT NULL,
@@ -44,7 +44,7 @@ def display_all_info():
     cursor = conn.cursor()
 
     print("\nUsers:")
-    cursor.execute("SELECT * FROM users")
+    cursor.execute("SELECT * FROM menus")
     users = cursor.fetchall()
     for user in users:
         print(user)
@@ -66,7 +66,7 @@ def display_all_info():
 def delete_table_users():
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM users")
+    cursor.execute("DELETE FROM menus")
     conn.commit()
     conn.close()
 
