@@ -59,3 +59,31 @@ def check_membership_id(membership_id):
         return False
 
     return True
+
+
+def search_member(query):
+    # Connect to SQLite database
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    # Prepare the search query to search all fields
+    search_query = f"%{query}%"
+
+    # Query the database
+    cursor.execute('''
+       SELECT * FROM members
+       WHERE member_id LIKE ? OR
+             first_name LIKE ? OR
+             last_name LIKE ? OR
+             address LIKE ? OR
+             email LIKE ? OR
+             phone LIKE ?
+       ''', (search_query, search_query, search_query, search_query, search_query, search_query))
+
+    # Fetch all matching rows
+    results = cursor.fetchall()
+
+    # Close the connection
+    conn.close()
+
+    return results

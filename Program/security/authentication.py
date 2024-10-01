@@ -55,6 +55,5 @@ def authenticate(username, password):
     cursor.execute('SELECT password_hash FROM menus WHERE username=?', (username,))
     data = cursor.fetchone()
     conn.close()
-    print('-------------')
     return verify_password(data[0], password)
 
