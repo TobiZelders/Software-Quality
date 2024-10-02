@@ -1,6 +1,9 @@
+from Program.security.authentication import quick_auth
 
 def admin_menu(username, role):
-    print(f"""
+    quick_auth(role, "role")
+    while True:
+        print(f"""
 █████████████████████████████████████
 █ ROLE: {role} 
 █ USER: {username}          
@@ -11,4 +14,17 @@ def admin_menu(username, role):
 █ [4] Reset admin password          █
 █ [0] Exit                          █
 █████████████████████████████████████
-    """)
+        """)
+        choice = input("Enter choice: ").strip()
+        if choice == '1':
+            break
+        elif choice == '2':
+            break
+        elif choice == '3':
+            break
+        elif choice == '4':
+            break
+        elif choice == '0':
+            break
+        else:
+            print("Invalid choice. Please try again.")

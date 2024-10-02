@@ -57,3 +57,8 @@ def authenticate(username, password):
     conn.close()
     return verify_password(data[0], password)
 
+def quick_auth(user_role, role):
+    return False if user_role != role else True
+
+
+

@@ -71,3 +71,4 @@ def delete_table_users():
     conn.close()
 
     display_all_info()
+
