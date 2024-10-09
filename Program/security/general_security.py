@@ -1,25 +1,5 @@
 import random
 import datetime
-from Program.db import create_connection
-from Program.security.authentication import hash_password
-
-def add_user(username, password, role, first_name, last_name):
-    conn = create_connection()
-    cursor = conn.cursor()
-    password_hash = hash_password(password)
-    cursor.execute('INSERT OR IGNORE INTO menus (username, password_hash, role, first_name, last_name, registration_date) VALUES (?, ?, ?, ?, ?, DATE())',
-                   (username, password_hash, role, first_name, last_name))
-    conn.commit()
-    conn.close()
-
-def get_role(username):
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT role FROM menus WHERE username=?', (username,))
-    data = cursor.fetchone()[0]
-    print(data)
-    conn.close()
-    return data
 
 def is_integer(value):
     return isinstance(value, int)
@@ -61,29 +41,3 @@ def check_membership_id(membership_id):
     return True
 
 
-def search_member(query):
-    # Connect to SQLite database
-    conn = create_connection()
-    cursor = conn.cursor()
-
-    # Prepare the search query to search all fields
-    search_query = f"%{query}%"
-
-    # Query the database
-    cursor.execute('''
-       SELECT * FROM members
-       WHERE member_id LIKE ? OR
-             first_name LIKE ? OR
-             last_name LIKE ? OR
-             address LIKE ? OR
-             email LIKE ? OR
-             phone LIKE ?
-       ''', (search_query, search_query, search_query, search_query, search_query, search_query))
-
-    # Fetch all matching rows
-    results = cursor.fetchall()
-
-    # Close the connection
-    conn.close()
-
-    return results

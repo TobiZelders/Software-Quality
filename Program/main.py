@@ -5,7 +5,6 @@ db.initialize_db()
 db.display_all_info()
 display.main_menu()
 
-
 """
 TODO
 1. Encryption decryption database

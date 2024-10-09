@@ -1,7 +1,7 @@
-from Program.security.authentication import quick_auth
+from db import quick_auth
 
 def admin_menu(username, role):
-    quick_auth(role, "role")
+    quick_auth(role, "system-admin")
     while True:
         print(f"""
 █████████████████████████████████████

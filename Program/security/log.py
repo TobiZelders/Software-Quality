@@ -1,4 +1,4 @@
-from Program.db import create_connection
+from db import create_connection
 
 def log_activity(username, activity, suspicious):
     conn = create_connection()

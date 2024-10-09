@@ -1,7 +1,6 @@
-from Program.security.authentication import authenticate
-from Program.security.general_security import get_role, add_user
-from Program.security.log import log_activity
-from Program.menus.member import member_menu
+from db import get_role, add_user, authenticate
+from security.log import log_activity
+from menus.member import member_menu
 
 
 def main_menu():
