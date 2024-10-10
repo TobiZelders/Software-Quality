@@ -32,13 +32,13 @@ def login():
     if authenticate(username, password):
         print(f"Welcome {username}!")
         log_activity(username, "Logged in", False)
-        role = get_role(username)
-        if role == "consultant":
-            consultant_menu(username, role)
-        elif role == "system-admin":
-            system_administrator(username, role)
-        elif role == "super-admin":
-            super_administrator(username, role)
+
+        if get_role(username, "consultant"):
+            consultant_menu(username, "consultant")
+        elif get_role(username, "system-admin"):
+            system_administrator(username, "system-admin")
+        elif get_role(username,  "super-admin"):
+            super_administrator(username, "super-admin")
     else:
         print("Invalid credentials.")
         log_activity(username, "Unsuccessful login", True)

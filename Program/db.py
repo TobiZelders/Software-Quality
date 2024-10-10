@@ -55,15 +55,18 @@ def add_user(username, password, role, first_name, last_name):
     conn.commit()
     conn.close()
 
-def get_role(username):
+def get_role(username, role):
+    found_user_role = ""
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT role FROM users WHERE username=?', (encrypt(username),))
-    data = cursor.fetchone()[0]
+    cursor.execute('SELECT * FROM users')
+    data = cursor.fetchall()
     conn.close()
-    print("encrypted role : " + data)
-    print("decrypted role : " + decrypt(data))
-    return decrypt(data)
+    for i in data:
+        if verify_data(i[1], username):
+            found_user_role = i[3]
+            break
+    return verify_data(found_user_role, role)
 
 def search_member(query):
     # Connect to SQLite database
