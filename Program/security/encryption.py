@@ -23,6 +23,14 @@ def encrypt(data):
     )
     return ciphertext
 
+def deterministic_encryption(data):
+    byte_data = data.encode('utf-8')
+    ciphertext = public_key.encrypt(
+        byte_data,
+        padding.PKCS1v15()  # Deterministic padding
+    )
+    return ciphertext
+
 def decrypt(data):
     plaintext = private_key.decrypt(
         data,
@@ -32,4 +40,4 @@ def decrypt(data):
             label=None
         )
     )
-    return plaintext
+    return plaintext.decode('utf-8')

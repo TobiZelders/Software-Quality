@@ -1,6 +1,7 @@
 import display
 import db
 
+
 db.initialize_db()
 db.display_all_info()
 display.main_menu()

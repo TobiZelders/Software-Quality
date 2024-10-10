@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 import os
-from security.encryption import encrypt, decrypt
+from security.encryption import encrypt, decrypt, deterministic_encryption
 
 def create_connection():
     conn = sqlite3.connect('unique_meal.db')
@@ -41,9 +41,9 @@ def initialize_db():
     conn.close()
 
 def add_user(username, password, role, first_name, last_name):
-    e_username = encrypt(username)
-    password_hash = hash_password(password)
-    e_role = encrypt(role)
+    e_username = hash_data(username)
+    password_hash = hash_data(password)
+    e_role = hash_data(role)
     e_first_name = encrypt(first_name)
     e_last_name = encrypt(last_name)
 
@@ -58,7 +58,7 @@ def add_user(username, password, role, first_name, last_name):
 def get_role(username):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT role FROM users WHERE username=?', (username,))
+    cursor.execute('SELECT role FROM users WHERE username=?', (encrypt(username),))
     data = cursor.fetchone()[0]
     conn.close()
     print("encrypted role : " + data)
@@ -119,65 +119,93 @@ def display_all_info():
 def delete_table_users():
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM menus")
+    cursor.execute("DELETE FROM users")
     conn.commit()
     conn.close()
 
     display_all_info()
 
-def hash_password(password):
+def hash_data(data):
     """
     This function will return a hash of the provided password
 
     When storing the hashed password we should also store salt to be able to verify later
     advised format = salt:hashed_password
 
-    :param password: provided password by user (recommended to first use password_regex)
-    :return: hashed password
+    :param data: provided data by user (recommended to first use regex)
+    :return: hashed data
     """
 
-    byte_password = password.encode()
+    byte_data = data.encode()
     salt = os.urandom(16)
     iterations = 500_000
     hash_name = 'sha256'
     derived_key_length = None
 
-    result = hashlib.pbkdf2_hmac(hash_name, byte_password, salt, iterations, derived_key_length)
+    result = hashlib.pbkdf2_hmac(hash_name, byte_data, salt, iterations, derived_key_length)
 
     return f"{salt.hex()}:{result.hex()}"
     #return hashlib.sha256(password.encode()).hexdigest()
 
-def verify_password(stored_password, input_password):
+def verify_data(stored_data, input_data):
     """
-    Verifies password provided by user with stored password in database
+    Verifies data provided by user with stored data in database
 
-    :param stored_password: hashed password stored in database
-    :param input_password: un-hashed password provided by user
-    :return: Boolean based on if the provided hashed password matches hashed password saved in database
+    :param stored_data: hashed password stored in database
+    :param input_data: un-hashed password provided by user
+    :return: Boolean based on if the provided hashed data matches hashed data saved in database
     """
 
-    salt = stored_password.split(':')[0]
-    hashed_password = stored_password.split(':')[1]
+    salt = stored_data.split(':')[0]
+    hashed_data = stored_data.split(':')[1]
 
     salt = bytes.fromhex(salt)
-    hashed_password = bytes.fromhex(hashed_password)
+    hashed_data = bytes.fromhex(hashed_data)
 
-    input_password = input_password.encode()
+    input_data = input_data.encode()
     hash_name = 'sha256'
     iterations = 500_000
     derived_key_length = None
 
-    new_hashed_password = hashlib.pbkdf2_hmac(hash_name, input_password, salt, iterations, derived_key_length)
+    new_hashed_data = hashlib.pbkdf2_hmac(hash_name, input_data, salt, iterations, derived_key_length)
 
-    return new_hashed_password == hashed_password
+    return new_hashed_data == hashed_data
 
+def reverse_data(stored_data, input_data):
+    salt = stored_data.split(':')[0]
+    salt = bytes.fromhex(salt)
+
+    input_data = input_data.encode()
+    hash_name = 'sha256'
+    iterations = 500_000
+    derived_key_length = None
+
+    new_hashed_data = hashlib.pbkdf2_hmac(hash_name, input_data, salt, iterations, derived_key_length)
+
+    return new_hashed_data
+
+def authenticate(username, password):
+    found_user_password = ""
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM users')
+    data = cursor.fetchall()
+    conn.close()
+    for i in data:
+        if verify_data(i[1], username):
+            found_user_password = i[2]
+            break
+    return verify_data(found_user_password, password)
+
+'''
 def authenticate(username, password):
     conn = create_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT password_hash FROM users WHERE username=?', (encrypt(username),))
+    cursor.execute('SELECT password_hash FROM users WHERE username=?', (hash_data(username),))
     data = cursor.fetchone() # Its not getting data - i think because we are encrypting data and it will encrypt differently again, you can test
     conn.close()
-    return verify_password(data[0], password)
+    return verify_data(data[0], password)
+'''
 
 def quick_auth(user_role, role):
     return False if user_role != role else True
