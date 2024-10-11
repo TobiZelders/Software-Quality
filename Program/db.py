@@ -7,6 +7,12 @@ def create_connection():
     conn = sqlite3.connect('unique_meal.db')
     return conn
 
+def is_valid_table_name(table):
+    return table.isidentifier()
+
+def quick_auth(user_role, role):
+    return False if user_role != role else True
+
 def initialize_db():
     conn = create_connection()
     cursor = conn.cursor()
@@ -34,6 +40,7 @@ def initialize_db():
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         date TEXT NOT NULL,
                         time TEXT NOT NULL,
+                        seen INTEGER NOT NULL,
                         username TEXT NOT NULL,
                         activity TEXT NOT NULL,
                         suspicious INTEGER NOT NULL)''')
@@ -55,18 +62,7 @@ def add_user(username, password, role, first_name, last_name):
     conn.commit()
     conn.close()
 
-def get_role(username, role):
-    found_user_role = ""
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users')
-    data = cursor.fetchall()
-    conn.close()
-    for i in data:
-        if verify_data(i[1], username):
-            found_user_role = i[3]
-            break
-    return verify_data(found_user_role, role)
+
 
 def search_member(query):
     # Connect to SQLite database
@@ -126,6 +122,13 @@ def delete_table_users():
     conn.commit()
     conn.close()
 
+def delete_table_log():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM logs")
+    conn.commit()
+    conn.close()
+
     display_all_info()
 
 def hash_data(data):
@@ -174,41 +177,70 @@ def verify_data(stored_data, input_data):
 
     return new_hashed_data == hashed_data
 
-def reverse_data(stored_data, input_data):
-    salt = stored_data.split(':')[0]
-    salt = bytes.fromhex(salt)
+def get_data_from_table(table):
+    if is_valid_table_name(table):
+        query = f'SELECT * FROM {table}'
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        data = cursor.fetchall()
+        conn.close()
+        return data
+    else:
+        #log suspicious @
+        print("Invalid table : " + table)
 
-    input_data = input_data.encode()
-    hash_name = 'sha256'
-    iterations = 500_000
-    derived_key_length = None
+def get_columns(table):
+    """
+    This function will return the column names within a table
 
-    new_hashed_data = hashlib.pbkdf2_hmac(hash_name, input_data, salt, iterations, derived_key_length)
+    :param table: the table from where you want the column names from
+    :return: column names found within a table
+    """
+    if is_valid_table_name(table):
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute(f'PRAGMA table_info({table})')
+        data = cursor.fetchall()
+        conn.close()
+        column_names = [row[1] for row in data]
+        return column_names
+    else:
+        #log suspicious @
+        print("Invalid table : " + table)
 
-    return new_hashed_data
+def from_table_where_column_get_variable(table, where_column, get_column, input_w_column, input_g_column):
+    """
+    This function will first search within the specified table for the where column. The where column can be username (so where username is...)
+    Than you can search based on username and you to test that user on specific data. The get column is that varialbe (so where username is . get role)
+    Than we can check with user input if this is actually true or not.
 
-def authenticate(username, password):
-    found_user_password = ""
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users')
-    data = cursor.fetchall()
-    conn.close()
-    for i in data:
-        if verify_data(i[1], username):
-            found_user_password = i[2]
+    :param table: to specify in what table you would like to search
+    :param where_column: to specify in what column you would like to search within the table
+    :param get_column: to specify what variable you would like to retrieve from the table
+    :param input_g_column: user input for where column
+    :param input_w_column: user input for get column
+    :return: Boolean if the values are found within the database.
+    """
+    table_data = get_data_from_table(table) # error here
+    columns = get_columns(table)
+    found_get_variable = ""
+    c_index = 0
+    v_index = 0
+
+    for c1 in columns:
+        if c1 == where_column:
             break
-    return verify_data(found_user_password, password)
+        c_index = c_index + 1
 
-'''
-def authenticate(username, password):
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT password_hash FROM users WHERE username=?', (hash_data(username),))
-    data = cursor.fetchone() # Its not getting data - i think because we are encrypting data and it will encrypt differently again, you can test
-    conn.close()
-    return verify_data(data[0], password)
-'''
+    for c2 in columns:
+        if c2 == get_column:
+            break
+        v_index = v_index + 1
 
-def quick_auth(user_role, role):
-    return False if user_role != role else True
+    for i in table_data:
+        if verify_data(i[c_index], input_w_column):
+            found_get_variable = i[v_index]
+            break
+    return verify_data(found_get_variable, input_g_column)
+

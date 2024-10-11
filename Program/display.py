@@ -1,4 +1,4 @@
-from db import get_role, add_user, authenticate
+from db import add_user, from_table_where_column_get_variable
 from security.log import log_activity
 from menus.member import member_menu
 
@@ -8,6 +8,8 @@ def main_menu():
     add_user("1", "1", "super-admin", "T", "Z")
     add_user("2", "2", "system-admin", "T", "Z")
     add_user("3", "3", "consultant", "T", "Z")
+    failed_login_attempts = 0
+    max_failed_login_attempts = 3
 
     while True:
         print("""
@@ -29,15 +31,17 @@ def main_menu():
 def login():
     username = input("Username: ").strip()
     password = input("Password: ").strip()
-    if authenticate(username, password):
+    if from_table_where_column_get_variable('users', 'username', 'password_hash', username, password): # authentication
         print(f"Welcome {username}!")
         log_activity(username, "Logged in", False)
 
-        if get_role(username, "consultant"):
-            consultant_menu(username, "consultant")
-        elif get_role(username, "system-admin"):
-            system_administrator(username, "system-admin")
-        elif get_role(username,  "super-admin"):
+        if from_table_where_column_get_variable('users', 'username', 'role', username, 'consultant'):
+            print("CONSULTANT CHECK")
+
+        elif from_table_where_column_get_variable('users', 'username', 'role', username, 'system-admin'):
+            print("SYSTEM ADMIN CHECK")
+
+        elif from_table_where_column_get_variable('users', 'username', 'role', username, 'super-admin'):
             super_administrator(username, "super-admin")
     else:
         print("Invalid credentials.")
