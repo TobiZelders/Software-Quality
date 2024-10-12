@@ -83,9 +83,8 @@ def system_administrator_menu(username, role):
 █ [2] User list                     █
 █ [3] Consultant menu               █
 █ [4] Member menu                   █
-█ [5] Make backup                   █
-█ [6] Restore backup                █   
-█ [7] See logs                      █  
+█ [5] Backup menu
+█ [6] See logs                      █  
 █ [0] Exit                          █
 █████████████████████████████████████
             """)
@@ -106,10 +105,8 @@ def system_administrator_menu(username, role):
         elif choice == '4':
             member_menu(username, role)
         elif choice == '5':
-            break
+            backup_menu(username, role)
         elif choice == '6':
-            break
-        elif choice == '7':
             see_logs(get_logs())
             set_seen_all_logs()
         elif choice == '0':
@@ -130,9 +127,8 @@ def super_administrator_menu(username, role):
 █ [2] Consultant menu               █
 █ [3] Admin menu                    █
 █ [4] Member menu                   █
-█ [5] Make backup                   █
-█ [6] Restore backup                █   
-█ [7] See logs                      █  
+█ [5] Backup menu
+█ [6] See logs                      █  
 █ [0] Exit                          █
 █████████████████████████████████████
         """)
@@ -154,12 +150,32 @@ def super_administrator_menu(username, role):
         elif choice == '4':
             member_menu(username, role)
         elif choice == '5':
-            break
+            backup_menu(username, role)
         elif choice == '6':
-            break
-        elif choice == '7':
             display_data(username, role, see_logs(get_logs()), "LOGS")
             set_seen_all_logs()
+        elif choice == '0':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def backup_menu(username, role):
+    while True:
+        print(f"""
+█████████████████████████████████████
+█ ROLE: {role} 
+█ USER: {username}          
+█████████████████████████████████████
+█ [1]  Make backup                  █
+█ [2]  Restore backup               █    
+█ [0]  Exit                         █
+█████████████████████████████████████        
+        """)
+        choice = input("Enter choice: ").strip()
+        if choice == '1':
+            break
+        elif choice == '2':
+            break
         elif choice == '0':
             break
         else:
