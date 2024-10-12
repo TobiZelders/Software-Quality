@@ -40,6 +40,47 @@ def password_regex(password):
     else:
         return False
 
+def name_regex(name):
+    name_regex = re.compile(r'^[A-Z][a-zA-Z\'\-]+ [A-Z][a-zA-Z\'\-]+$')
+    if name_regex.match(name):
+        return True
+    else:
+        return False
+
+def age_regex(age):
+    age_regex = re.compile(r'^(?:1[01][0-9]|120|[1-9]?[0-9])$')
+    if age_regex.match(age):
+        return True
+    else:
+        return False
+
+def weight_regex(weight):
+    weight_regex = re.compile(r'^(?:[1-9][0-9]{0,2}(?:\.[0-9])?|0\.[1-9])$')
+    if weight_regex.match(weight):
+        return True
+    else:
+        return False
+
+def email_regex(email):
+    email_regex = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    if email_regex.match(email):
+        return True
+    else:
+        return False
+
+def phone_regex(phone):
+    phone_regex = re.compile(r'^\+31-6-\d{8}$')
+    if phone_regex.match(phone):
+        return True
+    else:
+        return False
+
+def address_regex(address, city_list):
+    address_regex = re.compile(r'^[A-Z][a-zA-Z ]*, \d+, \d{4}[A-Z]{2}, ([A-Za-z]+)$')
+    if address_regex.match(address):
+        return True
+    else:
+        return False
 
 
 def regex_tester(list, regex):

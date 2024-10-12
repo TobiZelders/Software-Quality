@@ -1,25 +1,5 @@
 import random
 import datetime
-from Program.db import create_connection
-from Program.security.authentication import hash_password
-
-def add_user(username, password, role, first_name, last_name):
-    conn = create_connection()
-    cursor = conn.cursor()
-    password_hash = hash_password(password)
-    cursor.execute('INSERT OR IGNORE INTO menus (username, password_hash, role, first_name, last_name, registration_date) VALUES (?, ?, ?, ?, ?, DATE())',
-                   (username, password_hash, role, first_name, last_name))
-    conn.commit()
-    conn.close()
-
-def get_role(username):
-    conn = create_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT role FROM menus WHERE username=?', (username,))
-    data = cursor.fetchone()[0]
-    print(data)
-    conn.close()
-    return data
 
 def is_integer(value):
     return isinstance(value, int)
@@ -59,3 +39,5 @@ def check_membership_id(membership_id):
         return False
 
     return True
+
+
