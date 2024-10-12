@@ -1,5 +1,5 @@
-from db import add_user, from_table_where_column_get_variable
-from security.log import log_activity
+from db import add_user, check_data_from_column
+from security.log import log_activity, check_unseen_sus_logs, see_logs, get_logs, set_seen_all_logs
 from menus.member import member_menu
 
 
@@ -31,18 +31,18 @@ def main_menu():
 def login():
     username = input("Username: ").strip()
     password = input("Password: ").strip()
-    if from_table_where_column_get_variable('users', 'username', 'password_hash', username, password): # authentication
+    if check_data_from_column('users', 'username', 'password_hash', username, password): # authentication
         print(f"Welcome {username}!")
         log_activity(username, "Logged in", False)
 
-        if from_table_where_column_get_variable('users', 'username', 'role', username, 'consultant'):
-            print("CONSULTANT CHECK")
+        if check_data_from_column('users', 'username', 'role', username, 'consultant'):
+            consultant_menu(username, "consultant")
 
-        elif from_table_where_column_get_variable('users', 'username', 'role', username, 'system-admin'):
-            print("SYSTEM ADMIN CHECK")
+        elif check_data_from_column('users', 'username', 'role', username, 'system-admin'):
+            system_administrator_menu(username, "system-admin")
 
-        elif from_table_where_column_get_variable('users', 'username', 'role', username, 'super-admin'):
-            super_administrator(username, "super-admin")
+        elif check_data_from_column('users', 'username', 'role', username, 'super-admin'):
+            super_administrator_menu(username, "super-admin")
     else:
         print("Invalid credentials.")
         log_activity(username, "Unsuccessful login", True)
@@ -70,13 +70,15 @@ def consultant_menu(username, role):
         else:
             print("Invalid choice. Please try again.")
 
-def system_administrator(username, role):
+def system_administrator_menu(username, role):
+    sus_logs = check_unseen_sus_logs()
     while True:
         print(f"""
 █████████████████████████████████████
 █ ROLE: {role} 
 █ USER: {username}          
 █████████████████████████████████████
+{"█ [S] SUSPICIOUS ACTIVITY ALERT     █" if len(sus_logs) > 0 else "█                                   █"}
 █ [1] Update your password          █  
 █ [2] User list                     █
 █ [3] Consultant menu               █
@@ -88,6 +90,13 @@ def system_administrator(username, role):
 █████████████████████████████████████
             """)
         choice = input("Enter choice: ").strip()
+        if choice == 'S' or choice == 's':
+            if len(sus_logs) > 0:
+                sus_logs_decrypted = see_logs(sus_logs)
+                display_data(username, role, sus_logs_decrypted, "SUSPICIOUS LOGS")
+                set_seen_all_logs()
+            else:
+                print("Invalid choice. Please try again.")
         if choice == '1':
             break
         elif choice == '2':
@@ -101,20 +110,22 @@ def system_administrator(username, role):
         elif choice == '6':
             break
         elif choice == '7':
-            break
+            see_logs(get_logs())
+            set_seen_all_logs()
         elif choice == '0':
             break
         else:
             print("Invalid choice. Please try again.")
 
-def super_administrator(username, role):
-
+def super_administrator_menu(username, role):
+    sus_logs = check_unseen_sus_logs()
     while True:
         print(f"""
 █████████████████████████████████████
 █ ROLE: {role} 
 █ USER: {username}          
 █████████████████████████████████████
+{"█ [S] SUSPICIOUS ACTIVITY ALERT     █" if len(sus_logs) > 0 else "█                                   █"}
 █ [1] User list                     █
 █ [2] Consultant menu               █
 █ [3] Admin menu                    █
@@ -126,8 +137,16 @@ def super_administrator(username, role):
 █████████████████████████████████████
         """)
         choice = input("Enter choice: ").strip()
-        if choice == '1':
-            login()
+        if choice == 'S' or choice == 's':
+            if len(sus_logs) > 0:
+                sus_logs_decrypted = see_logs(sus_logs)
+                display_data(username, role, sus_logs_decrypted, "SUSPICIOUS LOGS")
+                set_seen_all_logs()
+            else:
+                print("Invalid choice. Please try again.")
+
+        elif choice == '1':
+            break
         elif choice == '2':
             break
         elif choice == '3':
@@ -139,8 +158,34 @@ def super_administrator(username, role):
         elif choice == '6':
             break
         elif choice == '7':
-            break
+            display_data(username, role, see_logs(get_logs()), "LOGS")
+            set_seen_all_logs()
         elif choice == '0':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+def display_data(username, role, data, menu_name):
+    d_data = ""
+    count = 1
+    for i in data:
+        d_data = f"{d_data}█ {count}) {i} \n"
+        count = count + 1
+    while True:
+        print(f"""
+*************************************
+█ ROLE: {role} 
+█ USER: {username}      
+*************************************
+█ --- {menu_name} ---
+*************************************
+{d_data}
+█████████████████████████████████████
+█ [0] Exit                          █
+█████████████████████████████████████
+        """)
+        choice = input("Enter choice: ").strip()
+        if choice == '0':
             break
         else:
             print("Invalid choice. Please try again.")

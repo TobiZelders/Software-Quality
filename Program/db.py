@@ -1,7 +1,7 @@
 import sqlite3
 import hashlib
 import os
-from security.encryption import encrypt, decrypt, deterministic_encryption
+from security.encryption import encrypt, decrypt
 
 def create_connection():
     conn = sqlite3.connect('unique_meal.db')
@@ -129,8 +129,6 @@ def delete_table_log():
     conn.commit()
     conn.close()
 
-    display_all_info()
-
 def hash_data(data):
     """
     This function will return a hash of the provided password
@@ -161,9 +159,12 @@ def verify_data(stored_data, input_data):
     :param input_data: un-hashed password provided by user
     :return: Boolean based on if the provided hashed data matches hashed data saved in database
     """
-
-    salt = stored_data.split(':')[0]
-    hashed_data = stored_data.split(':')[1]
+    try:
+        salt = stored_data.split(':')[0]
+        hashed_data = stored_data.split(':')[1]
+    except:
+        print("no match")
+        return False
 
     salt = bytes.fromhex(salt)
     hashed_data = bytes.fromhex(hashed_data)
@@ -209,7 +210,7 @@ def get_columns(table):
         #log suspicious @
         print("Invalid table : " + table)
 
-def from_table_where_column_get_variable(table, where_column, get_column, input_w_column, input_g_column):
+def check_data_from_column(table, where_column, get_column, input_w_column, input_g_column):
     """
     This function will first search within the specified table for the where column. The where column can be username (so where username is...)
     Than you can search based on username and you to test that user on specific data. The get column is that varialbe (so where username is . get role)
@@ -244,3 +245,48 @@ def from_table_where_column_get_variable(table, where_column, get_column, input_
             break
     return verify_data(found_get_variable, input_g_column)
 
+def get_exact_data_from_column(table, where_column, get_column, input_w_column, input_g_column):
+    """
+    This function will first search within the specified table for the where column. The where column can be username (so where username is...)
+    Than you can search based on username and you to test that user on specific data. The get column is that varialbe (so where username is . get role)
+    Than we can check with user input if this is actually true or not.
+
+    :param table: to specify in what table you would like to search
+    :param where_column: to specify in what column you would like to search within the table
+    :param get_column: to specify what variable you would like to retrieve from the table
+    :param input_g_column: user input for where column
+    :param input_w_column: user input for get column
+    :return: Boolean if the values are found within the database.
+    """
+    table_data = get_data_from_table(table) # error here
+    columns = get_columns(table)
+    found_get_variable = ""
+    c_index = 0
+    v_index = 0
+
+    found_data = []
+
+    for c1 in columns:
+        if c1 == where_column:
+            break
+        c_index = c_index + 1
+
+    for c2 in columns:
+        if c2 == get_column:
+            break
+        v_index = v_index + 1
+
+    for i in table_data:
+        if verify_data(i[c_index], input_w_column):
+            if verify_data(i[v_index], input_g_column):
+                found_data.append(i)
+
+    return found_data
+
+def get_logs():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM logs")
+    logs = cursor.fetchall()
+    conn.close()
+    return logs
