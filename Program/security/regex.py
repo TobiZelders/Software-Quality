@@ -41,7 +41,7 @@ def password_regex(password):
         return False
 
 def name_regex(name):
-    name_regex = re.compile(r'^[A-Z][a-zA-Z\'\-]+ [A-Z][a-zA-Z\'\-]+$')
+    name_regex = re.compile(r'^[A-Z][a-zA-Z\'\-]+$')
     if name_regex.match(name):
         return True
     else:
@@ -69,7 +69,7 @@ def email_regex(email):
         return False
 
 def phone_regex(phone):
-    phone_regex = re.compile(r'^\+31-6-\d{8}$')
+    phone_regex = re.compile(r'^\d{8}$')
     if phone_regex.match(phone):
         return True
     else:
@@ -82,6 +82,24 @@ def address_regex(address, city_list):
     else:
         return False
 
+def street_name_regex(street):
+    street_regex = re.compile(r'^[A-Z][a-zA-Z\'\- ]+$')
+    return bool(street_regex.match(street))
+
+def house_number_regex(house_number):
+    house_number_regex = re.compile(r'^\d+[a-zA-Z]?$')
+    return bool(house_number_regex.match(house_number))
+
+def zip_code_regex(zip_code):
+    zip_code_regex = re.compile(r'^\d{4}[A-Z]{2}$')
+    return bool(zip_code_regex.match(zip_code))
+
+def verify_city(city):
+    city_list = ["Rotterdam", "Amsterdam", "Eindhoven", "Utrecht", "Groningen", "Breda", "Tilburg", "Nijmegen", "Almere"]
+    if city in city_list:
+        return True
+    else:
+        return False
 
 def regex_tester(list, regex):
     for item in list:

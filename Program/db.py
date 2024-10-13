@@ -1,7 +1,9 @@
 import sqlite3
 import hashlib
 import os
+
 from security.encryption import encrypt, decrypt
+from security.general_security import generate_membership_id
 
 def create_connection():
     conn = sqlite3.connect('unique_meal.db')
@@ -19,19 +21,21 @@ def initialize_db():
     # Create tables
     cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username_hash TEXT UNIQUE NOT NULL,
                         username TEXT UNIQUE NOT NULL,
                         password_hash TEXT NOT NULL,
                         role TEXT NOT NULL,
+                        role_hash TEXT NOT NULL,
                         first_name TEXT,
                         last_name TEXT,
                         registration_date TEXT)''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS members (
-                        member_id INTEGER PRIMARY KEY,
+                        id INTEGER PRIMARY KEY,
                         first_name TEXT NOT NULL,
                         last_name TEXT NOT NULL,
-                        age INTEGER NOT NULL,
+                        age TEXT NOT NULL,
                         gender TEXT NOT NULL,
-                        weight REAL NOT NULL,
+                        weight TEXT NOT NULL,
                         address TEXT NOT NULL,
                         email TEXT NOT NULL,
                         phone TEXT NOT NULL,
@@ -46,50 +50,53 @@ def initialize_db():
                         suspicious INTEGER NOT NULL)''')
     conn.commit()
     conn.close()
+    add_user("super_admin", "Admin_123", "super-admin", "Tobias", "Zelders")
+    add_user("1", "1", "super-admin", "T", "Z")
+    add_user("2", "2", "system-admin", "T", "Z")
+    add_user("3", "3", "consultant", "T", "Z")
 
 def add_user(username, password, role, first_name, last_name):
-    e_username = hash_data(username)
+    h_username = hash_data(username)
+    e_username = encrypt(username)
     password_hash = hash_data(password)
-    e_role = hash_data(role)
+    h_role = hash_data(role)
+    e_role = encrypt(role)
     e_first_name = encrypt(first_name)
     e_last_name = encrypt(last_name)
 
     conn = create_connection()
     cursor = conn.cursor()
 
-    cursor.execute('INSERT OR IGNORE INTO users (username, password_hash, role, first_name, last_name, registration_date) VALUES (?, ?, ?, ?, ?, DATE())',
-                   (e_username, password_hash, e_role, e_first_name, e_last_name))
+    cursor.execute('INSERT OR IGNORE INTO users (username_hash, username, password_hash, role_hash, role, first_name, last_name, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?, DATE())',
+                   (h_username, e_username, password_hash, h_role, e_role, e_first_name, e_last_name))
+    conn.commit()
+    conn.close()
+
+def add_member(first_name, last_name, age, gender, weight, address, email, phone):
+    member_id = generate_membership_id()
+    e_first_name = encrypt(first_name)
+    e_last_name = encrypt(last_name)
+    e_address = encrypt(address)
+    e_email = encrypt(email)
+    e_phone = encrypt(phone)
+
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('INSERT OR IGNORE INTO members (id, first_name, last_name, age, gender, weight, address, email, phone, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DATE())',
+                   (member_id, e_first_name, e_last_name, age, gender, weight, e_address, e_email, e_phone))
     conn.commit()
     conn.close()
 
 
-
-def search_member(query):
-    # Connect to SQLite database
+def delete_member(member_id):
     conn = create_connection()
     cursor = conn.cursor()
-
-    # Prepare the search query to search all fields
-    search_query = f"%{query}%"
-
-    # Query the database
-    cursor.execute('''
-       SELECT * FROM members
-       WHERE member_id LIKE ? OR
-             first_name LIKE ? OR
-             last_name LIKE ? OR
-             address LIKE ? OR
-             email LIKE ? OR
-             phone LIKE ?
-       ''', (search_query, search_query, search_query, search_query, search_query, search_query))
-
-    # Fetch all matching rows
-    results = cursor.fetchall()
-
-    # Close the connection
+    cursor.execute('DELETE FROM members WHERE id = ?', (member_id,))
+    conn.commit()
     conn.close()
 
-    return results
+    print(f'Member with ID {member_id} has been deleted.')
 
 def display_all_info():
     conn = create_connection()
@@ -151,6 +158,20 @@ def hash_data(data):
     return f"{salt.hex()}:{result.hex()}"
     #return hashlib.sha256(password.encode()).hexdigest()
 
+def update_password(username, new_password):
+    new_password_hash = hash_data(new_password)
+    conn = sqlite3.connect('your_database.db')  # replace 'your_database.db' with your actual database name
+    cursor = conn.cursor()
+
+    # Update the password for the given username
+    cursor.execute('UPDATE users SET password_hash = ? WHERE username = ?', (new_password_hash, hash_data(username)))
+
+    # Commit the changes and close the connection
+    conn.commit()
+    conn.close()
+
+    print(f'Password for user "{username}" has been updated.')
+
 def verify_data(stored_data, input_data):
     """
     Verifies data provided by user with stored data in database
@@ -209,6 +230,29 @@ def get_columns(table):
     else:
         #log suspicious @
         print("Invalid table : " + table)
+
+def get_column_data(table, column):
+    if is_valid_table_name(table):
+        query = f'SELECT id, {column} FROM {table}'
+        conn = create_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        data = cursor.fetchall()
+        conn.close()
+        return data
+    else:
+        #log suspicious @
+        print("Invalid table : " + table)
+
+def authenticate(username, password):
+    e_u = encrypt(username)
+    print(e_u)
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT password_hash FROM users WHERE username=?', (e_u,))
+    data = cursor.fetchone()
+    conn.close()
+    return verify_data(data[0], password)
 
 def check_data_from_column(table, where_column, get_column, input_w_column, input_g_column):
     """
@@ -295,6 +339,14 @@ def get_users():
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    conn.close()
+    return users
+
+def get_members():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM members")
     users = cursor.fetchall()
     conn.close()
     return users
