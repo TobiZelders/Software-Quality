@@ -1,3 +1,4 @@
+import backup
 from db import add_user, check_data_from_column
 from security.log import log_activity, check_unseen_sus_logs, see_logs, get_logs, set_seen_all_logs
 from menus.member import member_menu
@@ -173,13 +174,23 @@ def backup_menu(username, role):
         """)
         choice = input("Enter choice: ").strip()
         if choice == '1':
-            break
+            save_file = backup.backup()
+            print(f""" \n
++█-█-█-█-█-█-█-█-█-█-█-█-█-█+
+|         BACKUP MADE:     
+| {save_file}
++█-█-█-█-█-█-█-█-█-█-█-█-█-█+            
+            """)
         elif choice == '2':
-            break
+            str_choice = display_select_data(username, role, backup.get_backup_list(), " RESTORE BACKUP \n NOTE: YOU WILL BE LOGGED OUT AFTER RESTORE IS COMPLETE")
+            if str_choice != "":
+                backup.restore(str_choice)
+            return
         elif choice == '0':
             break
         else:
             print("Invalid choice. Please try again.")
+
 
 def display_data(username, role, data, menu_name):
     d_data = ""
@@ -203,5 +214,46 @@ def display_data(username, role, data, menu_name):
         choice = input("Enter choice: ").strip()
         if choice == '0':
             break
+        else:
+            print("Invalid choice. Please try again.")
+
+def is_integer(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def string_to_int(string):
+    try:
+        return int(string)
+    except ValueError:
+        return "Error: The provided string cannot be converted to an integer."
+
+def display_select_data(username, role, data, menu_name):
+    d_data = ""
+    count = 1
+    for i in data:
+        d_data = f"{d_data}█ [{count}] {i} \n"
+        count = count + 1
+    while True:
+        print(f"""
+*************************************
+█ ROLE: {role} 
+█ USER: {username}      
+*************************************
+█ --- {menu_name} ---
+*************************************
+{d_data}
+█ [0] Exit                          █
+█████████████████████████████████████
+        """)
+        choice = input("Enter choice: ").strip()
+        if is_integer(choice):
+            i_choice = string_to_int(choice)
+            if 0 < i_choice <= len(data):
+                return data[i_choice+1]
+        elif choice == '0':
+            return ""
         else:
             print("Invalid choice. Please try again.")

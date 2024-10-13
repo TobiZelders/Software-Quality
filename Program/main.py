@@ -3,8 +3,7 @@ import db
 import backup
 from security.encryption import init_rsa
 
-backup.backup()
-backup.restore('backup_2024-10-12_20-53-28')
+
 db.initialize_db()
 #db.display_all_info()
 display.main_menu()
