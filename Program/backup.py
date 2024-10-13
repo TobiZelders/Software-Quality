@@ -57,5 +57,6 @@ def get_backup_list():
     for folder in os.listdir(backup_folder):
         backup_list.append(folder)
 
+    return backup_list
 
 

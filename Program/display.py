@@ -106,7 +106,9 @@ def system_administrator_menu(username, role):
         elif choice == '4':
             member_menu(username, role)
         elif choice == '5':
-            backup_menu(username, role)
+            r = backup_menu(username, role)
+            if r == "restored":
+                break
         elif choice == '6':
             see_logs(get_logs())
             set_seen_all_logs()
@@ -117,6 +119,7 @@ def system_administrator_menu(username, role):
 
 def super_administrator_menu(username, role):
     sus_logs = check_unseen_sus_logs()
+    print(f"sus_logs length: {len(sus_logs)}")
     while True:
         print(f"""
 █████████████████████████████████████
@@ -128,7 +131,7 @@ def super_administrator_menu(username, role):
 █ [2] Consultant menu               █
 █ [3] Admin menu                    █
 █ [4] Member menu                   █
-█ [5] Backup menu
+█ [5] Backup menu                   █
 █ [6] See logs                      █  
 █ [0] Exit                          █
 █████████████████████████████████████
@@ -151,7 +154,9 @@ def super_administrator_menu(username, role):
         elif choice == '4':
             member_menu(username, role)
         elif choice == '5':
-            backup_menu(username, role)
+            r = backup_menu(username, role)
+            if r == "restored":
+                break
         elif choice == '6':
             display_data(username, role, see_logs(get_logs()), "LOGS")
             set_seen_all_logs()
@@ -176,16 +181,16 @@ def backup_menu(username, role):
         if choice == '1':
             save_file = backup.backup()
             print(f""" \n
-+█-█-█-█-█-█-█-█-█-█-█-█-█-█+
-|         BACKUP MADE:     
++█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█+
+|             BACKUP MADE:     
 | {save_file}
-+█-█-█-█-█-█-█-█-█-█-█-█-█-█+            
++█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█-█+
             """)
         elif choice == '2':
             str_choice = display_select_data(username, role, backup.get_backup_list(), " RESTORE BACKUP \n NOTE: YOU WILL BE LOGGED OUT AFTER RESTORE IS COMPLETE")
             if str_choice != "":
                 backup.restore(str_choice)
-            return
+            return "restored"
         elif choice == '0':
             break
         else:
@@ -233,6 +238,9 @@ def string_to_int(string):
 def display_select_data(username, role, data, menu_name):
     d_data = ""
     count = 1
+    if len(data) == 0:
+        print("No data found")
+        return ""
     for i in data:
         d_data = f"{d_data}█ [{count}] {i} \n"
         count = count + 1
@@ -249,10 +257,12 @@ def display_select_data(username, role, data, menu_name):
 █████████████████████████████████████
         """)
         choice = input("Enter choice: ").strip()
-        if is_integer(choice):
+        if is_integer(choice) and choice != '0':
             i_choice = string_to_int(choice)
             if 0 < i_choice <= len(data):
                 return data[i_choice+1]
+            else:
+                print("Invalid choice. Please try again.")
         elif choice == '0':
             return ""
         else:

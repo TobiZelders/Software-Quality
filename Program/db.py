@@ -290,3 +290,11 @@ def get_logs():
     logs = cursor.fetchall()
     conn.close()
     return logs
+
+def get_users():
+    conn = create_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    conn.close()
+    return users

@@ -3,7 +3,6 @@ import db
 import backup
 from security.encryption import init_rsa
 
-
 db.initialize_db()
 #db.display_all_info()
 display.main_menu()

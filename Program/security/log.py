@@ -33,7 +33,6 @@ def check_unseen_sus_logs():
 def set_seen_all_logs():
     seen = '1'
     e_seen = hash_data(seen)
-    print(e_seen)
     conn = create_connection()
     cursor = conn.cursor()
     cursor.execute("UPDATE logs SET seen = ?", (e_seen,))
