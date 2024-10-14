@@ -33,7 +33,22 @@ def main_menu():
             print("Invalid choice. Please try again.")
 
 def login():
-    username = input("Username: ").strip()
+    while True:
+        username = input("█████████████████████████████████████\n█ [0] Exit                          █\n█████████████████████████████████████\nUsername:").strip()
+        if username == '0':
+            break
+        elif security.regex.username_regex(username):
+            break
+        else:
+            print("Username needs to have between 8 and 10 characters\nMust start with a letter or underscore \nCan contain : letters, numbers, underscores, apostrophes and periods")
+    while True:
+        password = input("█████████████████████████████████████\n█ [0] Exit                          █\n█████████████████████████████████████\nPassword:").strip()
+        if password == '0':
+            break
+        elif security.regex.password_regex(password):
+            break
+        else:
+            print("Password needs to be between 12 and 30 characters\n○ must be no longer than 30 characters\n Can contain letters (a-z), (A-Z), numbers (0-9), Special characters such as ~!@#$%&_-+=`|\(){}[]:;'<>,.?/\nmust have a combination of at least one lowercase letter, one uppercase letter, one digit, and one special character")
     password = input("Password: ").strip()#
     if check_data_from_column('users', 'username_hash', 'password_hash', username, password): # authentication
         print(f"Welcome {username}!")
